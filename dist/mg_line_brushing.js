@@ -1,12 +1,12 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
-    define(['d3', 'jquery', 'MG'], factory);
+    define(['d3', 'MG'], factory);
   } else if (typeof exports === 'object') {
-    module.exports = factory(require('d3'), require('jquery'), require('MG'));
+    module.exports = factory(require('d3'), require('MG'));
   } else {
-    root.Mg_line_brushing = factory(root.d3, root.jQuery, root.MG);
+    root.Mg_line_brushing = factory(root.d3, root.MG);
   }
-}(this, function(d3, $, MG) {
+}(this, function(d3, MG) {
 /**
   2. accessors
 */
