@@ -1,8 +1,8 @@
 (function(root, factory) {
   if (typeof define === 'function' && define.amd) {
-    define(['d3', 'MG'], factory);
+    define(['d3', 'metrics-graphics/dist/metricsgraphics'], factory);
   } else if (typeof exports === 'object') {
-    module.exports = factory(require('d3'), require('MG'));
+    module.exports = factory(require('d3'), require('metrics-graphics/dist/metricsgraphics'));
   } else {
     root.Mg_line_brushing = factory(root.d3, root.MG);
   }
@@ -50,7 +50,7 @@ function get_brush_interval(args) {
 
     if (!resolution) {
         if (args.time_series) {
-            resolution = d3.timeDay;
+            resolution = d3.time.day;
         } else {
             resolution = 1;
         }
