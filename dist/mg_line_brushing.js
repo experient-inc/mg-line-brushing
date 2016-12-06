@@ -102,8 +102,7 @@ var brushHistory = {},
 MG.add_hook('global.defaults', function(args) {
   // enable brushing unless it's explicitly disabled
   args.brushing = args.brushing !== false;
-  if (args.brushing) {
-    args.brushing_history = args.brushing_history !== false;
+  if (args.brushing) {    
     args.aggregate_rollover = true;
   }
 });
@@ -151,7 +150,10 @@ function brushing() {
         .classed('mg-extent', true);
 
     // mousedown, start area selection
-    svg.on('mousedown', function() {
+    svg.on('mousedown', onClickDown);
+    svg.on('touchstart', onClickDown);
+
+    function onClickDown () {
         mouseDown = true;
         isDragging = false;
         originX = d3.mouse(this)[0];
@@ -162,10 +164,13 @@ function brushing() {
             opacity: 0,
             width: 0
         });
-    });
+    }
 
     // mousemove / drag, expand area selection
-    svg.on('mousemove', function() {
+    svg.on('mousemove', onMove);
+    svg.on('touchmove', onMove);
+
+    function onMove() {
         if (mouseDown) {
             isDragging = true;
             rollover.classed('mg-brushing', true);
@@ -179,10 +184,16 @@ function brushing() {
               .attr('width', width)
               .attr('opacity', 1);
         }
-    });
+    }
 
     // mouseup, finish area selection
-    svg.on('mouseup', function() {
+    svg.on('mouseup', onClickUp);
+    svg.on('touchend', onClickUp);
+
+    function onClickUp() {        
+        if(onClickUp['debounce'])
+            return;
+
         mouseDown = false;
         svg.classed('mg-brushing-in-progress', false);
 
@@ -248,7 +259,7 @@ function brushing() {
             yScale.domain(yBounds);
         }
         // zooming out on click, maintaining the step history
-        else if (args.brushing_history) {
+        else {
             if (brushHistory[args.target].brushed) {
                 var previousBrush = brushHistory[args.target].steps.pop();
                 if (previousBrush) {
@@ -303,10 +314,14 @@ function brushing() {
 
             // redraw the chart
             if (!args.brushing_manual_redraw) {
-               MG.data_graphic(args);
+            MG.data_graphic(args);
             }
-        }
-    });
+        }      
+
+        onClickUp['debounce'] = setTimeout(function() {
+            onClickUp['debounce'] = undefined;
+        }, 100);
+    }
 
     return this;
 }
@@ -334,7 +349,7 @@ function processYAxis(args) {
 MG.add_hook('y_axis.process_min_max', processYAxis);
 
 function afterRollover(args) {
-  if (args.brushing_history && brushHistory[args.target] && brushHistory[args.target].brushed) {
+  if (brushHistory[args.target] && brushHistory[args.target].brushed) {
     var svg = d3.select(args.target).select('svg');
     svg.classed('mg-brushed', true);
   }
