@@ -154,17 +154,17 @@ function brushing() {
     if(!window['mgScrollInterval']) {
         var curr = window.scrollY;
         window['mgScrollInterval'] = setInterval(function interval() {
-            if(window.scrollY != curr) {
+            if(window.scrollY !== curr) {
                 isScrolling = true;
                 clearInterval(window['mgScrollInterval']);
                 setTimeout(function() {
-                    window['mgScrollInterval'] = setInterval(interval, 1);
-                }, 2000);
-                curr = window.scrollY;            
+                    curr = window.scrollY;
+                    window['mgScrollInterval'] = setInterval(interval, 10);
+                }, 5000);                            
             }
-            else 
+            else if(isScrolling)
                 isScrolling = false;            
-        }, 1)
+        }, 10)
     }
 
     // mousedown, start area selection
