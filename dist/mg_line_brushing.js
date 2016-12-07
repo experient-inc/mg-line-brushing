@@ -207,7 +207,7 @@ function brushing() {
                 .attr('opacity', 1);
             }
         }, 10);
-    }
+    } 
 
     // mouseup, finish area selection
     svg.on('mouseup', onClickUp);
