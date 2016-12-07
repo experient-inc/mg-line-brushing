@@ -150,20 +150,22 @@ function brushing() {
         .attr('height', args.height - args.bottom - args.top - args.buffer)
         .classed('mg-extent', true);
 
-    document.addEventListener("scroll", function scroll() {
-        if(!isDragging){
-            isScrolling = true;
-
-            if(scroll['debounce']) {
-                clearTimeout(scroll['debounce']);
-                scroll['debounce'] = undefined;
+    
+    if(!window['mgScrollInterval']) {
+        var curr = window.scrollY;
+        window['mgScrollInterval'] = setInterval(function interval() {
+            if(window.scrollY != curr) {
+                isScrolling = true;
+                clearInterval(window['mgScrollInterval']);
+                setTimeout(function() {
+                    window['mgScrollInterval'] = setInterval(interval, 1);
+                }, 2000);
+                curr = window.scrollY;            
             }
-
-            scroll['debounce'] = setTimeout(function() {
-                isScrolling = false;
-            }, 100);                        
-        }
-    }, false);
+            else 
+                isScrolling = false;            
+        }, 1)
+    }
 
     // mousedown, start area selection
     svg.on('mousedown', onClickDown);
@@ -184,7 +186,7 @@ function brushing() {
                     width: 0
                 });
             }
-        }, 10);
+        }, 100);
     }
 
     // mousemove / drag, expand area selection
@@ -192,30 +194,39 @@ function brushing() {
     svg.on('touchmove', onMove);
 
     function onMove() {
-        var mouseX = d3.mouse(this)[0],
-            newX = Math.min(originX, mouseX),
-            width = Math.max(originX, mouseX) - newX;
+        if(originX) {
+            var mouseX = d3.mouse(this)[0],
+                newX = Math.min(originX, mouseX),
+                width = Math.max(originX, mouseX) - newX;
 
-        setTimeout(function() {
-            if (!isScrolling && mouseDown) {
-                isDragging = true;
-                rollover.classed('mg-brushing', true);                
+            setTimeout(function() {
+                if (!isScrolling && mouseDown) {
+                    isDragging = true;
+                    rollover.classed('mg-brushing', true);                
 
-                extentRect
-                .attr('x', newX)
-                .attr('width', width)
-                .attr('opacity', 1);
-            }
-        }, 10);
-    } 
+                    extentRect
+                    .attr('x', newX)
+                    .attr('width', width)
+                    .attr('opacity', 1);
+                }
+            }, 100);
+        }
+    }
 
     // mouseup, finish area selection
     svg.on('mouseup', onClickUp);
     svg.on('touchend', onClickUp);
 
     function onClickUp() {        
-        if(isScrolling || onClickUp['debounce'])
+        if(isScrolling || onClickUp['debounce']){
+            if(extentRect){
+                extentRect.remove();
+                mouseDown = false;
+                svg.classed('mg-brushing-in-progress', false);
+            }
+                
             return;
+        }
 
         mouseDown = false;
         svg.classed('mg-brushing-in-progress', false);
